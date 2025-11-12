@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D横版跑酷游戏</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="gameOver" class="hidden">
+            <h2>游戏结束</h2>
+            <p>你的分数: <span id="scoreDisplay">0</span></p>
+            <button id="restartButton">重新开始</button>
+        </div>
+        <div id="scoreCounter">分数: 0</div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
