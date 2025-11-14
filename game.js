@@ -5,10 +5,108 @@ const gameOver = document.getElementById('gameOver');
 const scoreDisplay = document.getElementById('scoreDisplay');
 const restartButton = document.getElementById('restartButton');
 const scoreCounter = document.getElementById('scoreCounter');
+const orientationReminder = document.getElementById('orientation-reminder');
 
-// 设置画布大小
-canvas.width = 800;
-canvas.height = 400;
+// 移动端检测
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+// 设置画布大小函数
+function setCanvasSize() {
+    const isLandscape = window.innerWidth > window.innerHeight;
+    
+    if (isMobile) {
+        if (isLandscape) {
+            // 横屏模式：使用全屏宽度
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        } else {
+            // 竖屏模式：使用较小的尺寸
+            canvas.width = window.innerHeight * 2; // 2:1 比例
+            canvas.height = window.innerHeight;
+        }
+    } else {
+        // 桌面端：固定尺寸或响应式
+        const maxWidth = Math.min(window.innerWidth * 0.9, 1200);
+        const maxHeight = Math.min(window.innerHeight * 0.8, 600);
+        
+        // 保持2:1的宽高比
+        if (maxWidth / maxHeight > 2) {
+            canvas.width = maxHeight * 2;
+            canvas.height = maxHeight;
+        } else {
+            canvas.width = maxWidth;
+            canvas.height = maxWidth / 2;
+        }
+    }
+    
+    // 更新游戏对象位置
+    updateGamePositions();
+}
+
+// 更新游戏对象位置
+function updateGamePositions() {
+    // 更新地面位置
+    if (ground) {
+        ground.y = canvas.height - 20;
+    }
+    
+    // 更新玩家初始位置
+    if (player) {
+        player.x = 100;
+        player.y = canvas.height - 60;
+    }
+    
+    // 更新背景尺寸
+    if (background) {
+        background.width = canvas.width;
+        background.height = canvas.height;
+    }
+    
+    // 重新计算云朵位置
+    if (clouds && clouds.length > 0) {
+        clouds.forEach(cloud => {
+            if (cloud.x > canvas.width) {
+                cloud.x = canvas.width + Math.random() * 500;
+            }
+            if (cloud.y > canvas.height * 0.5) {
+                cloud.y = Math.random() * (canvas.height * 0.5);
+            }
+        });
+    }
+    
+    // 重新计算障碍物位置
+    if (obstacles && obstacles.length > 0 && ground) {
+        obstacles.forEach(obstacle => {
+            obstacle.y = ground.y - obstacle.height;
+        });
+    }
+}
+
+// 屏幕方向检测
+function checkOrientation() {
+    const isLandscape = window.innerWidth > window.innerHeight;
+    
+    if (isMobile) {
+        if (isLandscape) {
+            // 横屏模式：隐藏提示，显示游戏
+            orientationReminder.style.display = 'none';
+            document.getElementById('game-container').style.display = 'block';
+            
+            // 如果游戏未运行且不在游戏结束状态，显示开始画面
+            if (!gameRunning && gameOver.classList.contains('hidden')) {
+                startScreen();
+            }
+        } else {
+            // 竖屏模式：显示提示，隐藏游戏
+            orientationReminder.style.display = 'flex';
+            document.getElementById('game-container').style.display = 'none';
+        }
+    } else {
+        // 桌面端：始终显示游戏
+        orientationReminder.style.display = 'none';
+        document.getElementById('game-container').style.display = 'block';
+    }
+}
 
 // 游戏变量
 let score = 0;
@@ -59,8 +157,15 @@ const background = {
 // 云朵数组
 const clouds = [];
 
+// 初始化画布大小和屏幕方向检测（在所有游戏对象定义之后）
+setCanvasSize();
+checkOrientation();
+
 // 初始化函数
 function init() {
+    // 重新设置画布大小
+    setCanvasSize();
+    
     score = 0;
     gameSpeed = 3;
     obstacles.length = 0;
@@ -297,13 +402,31 @@ function handleKeyDown(e) {
 // 处理触摸输入（移动设备支持）
 function handleTouchStart(e) {
     e.preventDefault();
+    
     if (!gameRunning) {
         init();
-    } else if (player.jumpsRemaining > 0) {
-        player.jumping = true;
-        player.velocityY = player.jumpForce;
-        player.jumpsRemaining--;
+        return;
     }
+    
+    // 多点触控支持：每个触摸点都可以触发跳跃
+    for (let touch of e.touches) {
+        if (player.jumpsRemaining > 0) {
+            player.jumping = true;
+            player.velocityY = player.jumpForce;
+            player.jumpsRemaining--;
+            break; // 一次只处理一个跳跃
+        }
+    }
+}
+
+// 处理触摸结束
+function handleTouchEnd(e) {
+    e.preventDefault();
+}
+
+// 处理触摸移动（防止默认滚动行为）
+function handleTouchMove(e) {
+    e.preventDefault();
 }
 
 // 重新开始按钮事件
@@ -312,6 +435,22 @@ restartButton.addEventListener('click', init);
 // 添加事件监听
 window.addEventListener('keydown', handleKeyDown);
 canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+// 窗口大小变化监听
+window.addEventListener('resize', () => {
+    setCanvasSize();
+    checkOrientation();
+});
+
+// 屏幕方向变化监听
+window.addEventListener('orientationchange', () => {
+    setTimeout(() => {
+        setCanvasSize();
+        checkOrientation();
+    }, 100); // 延迟执行以确保方向变化完成
+});
 
 // 初始显示
 function startScreen() {
