@@ -11,19 +11,79 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
+    overflow: hidden;
+    position: relative;
 }
 
+/* 横屏提示界面 */
+#orientation-reminder {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.orientation-content {
+    text-align: center;
+    color: white;
+    padding: 2rem;
+}
+
+.phone-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    animation: shake 2s infinite;
+}
+
+.rotation-icon {
+    font-size: 3rem;
+    margin-top: 1rem;
+    animation: rotate 2s infinite linear;
+}
+
+@keyframes shake {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-10deg); }
+    75% { transform: rotate(10deg); }
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.orientation-content h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.orientation-content p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+/* 游戏容器 */
 #game-container {
     position: relative;
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     overflow: hidden;
+    max-width: 100vw;
+    max-height: 100vh;
 }
 
 #gameCanvas {
     display: block;
     background: linear-gradient(skyblue, #87CEEB);
+    max-width: 100%;
+    max-height: 100%;
 }
 
 #gameOver {
@@ -62,10 +122,15 @@ body {
     cursor: pointer;
     border-radius: 4px;
     transition: background-color 0.3s;
+    -webkit-tap-highlight-color: transparent;
 }
 
 #restartButton:hover {
     background-color: #45a049;
+}
+
+#restartButton:active {
+    transform: scale(0.95);
 }
 
 #scoreCounter {
@@ -77,4 +142,86 @@ body {
     padding: 0.5rem 1rem;
     border-radius: 4px;
     font-weight: bold;
+    z-index: 5;
+}
+
+/* 移动端适配 */
+@media screen and (max-width: 768px) {
+    body {
+        padding: 0;
+        margin: 0;
+    }
+    
+    #game-container {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+    }
+    
+    #gameCanvas {
+        width: 100vw;
+        height: 100vh;
+    }
+    
+    #gameOver {
+        width: 90%;
+        max-width: 400px;
+        padding: 1.5rem;
+    }
+    
+    #gameOver h2 {
+        font-size: 1.5rem;
+    }
+    
+    #gameOver p {
+        font-size: 1rem;
+    }
+    
+    #restartButton {
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+    }
+    
+    #scoreCounter {
+        font-size: 1.2rem;
+        padding: 0.8rem 1.2rem;
+    }
+}
+
+/* 超小屏幕适配 */
+@media screen and (max-width: 480px) {
+    .orientation-content h2 {
+        font-size: 1.5rem;
+    }
+    
+    .orientation-content p {
+        font-size: 1rem;
+    }
+    
+    .phone-icon {
+        font-size: 3rem;
+    }
+    
+    .rotation-icon {
+        font-size: 2rem;
+    }
+}
+
+/* 横屏模式下的样式调整 */
+@media screen and (orientation: landscape) {
+    #orientation-reminder {
+        display: none !important;
+    }
+}
+
+/* 竖屏模式下的横屏提示（仅在移动设备上显示） */
+@media screen and (orientation: portrait) and (max-width: 768px) {
+    #orientation-reminder {
+        display: flex;
+    }
+    
+    #game-container {
+        display: none;
+    }
 }`
